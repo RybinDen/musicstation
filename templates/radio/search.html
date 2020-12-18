@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block header %}
+  <h1>{% block title %}search radio{% endblock %}</h1>
+{% endblock %}
+{% block content %}
+  {% for radio in response %}
+<p><a href="{{ radio['url'] }}">{{ radio['name'] }}</a></p>
+  {% endfor %}
+{% endblock %}

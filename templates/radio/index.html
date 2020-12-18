@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block header %}
+  <h1>{% block title %}radio{% endblock %}</h1>
+{% endblock %}
+{% block content %}
+<ul class="nav nav-tabs" role="tablist">
+  <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Поиск</a>
+    <div class="dropdown-menu">
+      <a class="dropdown-item" href="#">Страны</a>
+      <a class="dropdown-item" href="#">Коды стран</a>
+      <a class="dropdown-item" href="#">Языки</a>
+      <div class="dropdown-divider"></div>
+      <a class="dropdown-item" href="#">Расширенный поиск</a>
+    </div>
+  </li>
+  <li class="nav-item" role="presentation">
+  <a id="station-tab" class="nav-link active" href="#station" data-toggle="tab" role="tab" aria-controls="station"" aria-selected="true">Станции</a>
+  </li>
+  <li class="nav-item" role="presentation">
+  <a class="nav-link" data-toggle="tab" href="#favorites" role="tab" aria-controls="favorites" aria-selected="false">Избранное</a>
+  </li>
+  <li class="nav-item" role="presentation">
+  <a class="nav-link" data-toggle="tab" href="#history" role="tab" aria-controls="history" aria-selected="false">История</a>
+  </li>
+</ul>
+<div class="tab-content">
+  <div class="tab-pane fade show active" id="station" role="tabpanel" aria-labelledby="station-tab">
+  <h2>список радиостанций</h2>
+<form id="searchRadio">
+  <input type="text" name="name">
+  <input type="submit">
+</form>
+  <p>
+  <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseStation" aria-expanded="false" aria-controls="collapseStation">Сортировка</button>
+</p>
+<div class="collapse" id="collapseStation">
+тут будет ссылки на сортировки и показ радиостанция по языку, странам и тд.
+</div>
+  </div>
+  <div class="tab-pane fade" id="favorites">список избранных станций</div>
+  <div class="tab-pane fade" id="history">история прослушивания</div>
+  </div>
+<div id="container">
+<div id="error" aria-live="polite"></div>
+<div id="result"></div>
+<div>всего {{ countStation }} </div>
+<div id="loaded" aria-live="polite">0 элементов загружено</div>
+          <div id="scroller" class="mb-3">
+<div id="list-radio"></div>
+          </div>
+          <div class="d-flex justify-content-center mb-3" id="sentinel">
+            <div class="spinner-border" role="status"></div>
+          </div>
+<p>Используется <a href="https://www.radio-browser.info/" target="_blank">Community Radio Browser</a></p>
+</div>
+   {% endblock %}
+{% block scripts %}
+<script>
+$(document).on('click', '.radio', function() {
+        fetch('/radio/click?stationuuid='+ $(this).data('id'))
+            .then((response) => {
+                if(response.ok) {
+                    return response.json();
+                }
+                throw new Error('Network response was not ok');
+            })
+            .then((json) => {
+document.getElementById('result').textContent = 'Сейчас играет: ' + json.name;
+//document.getElementById('result-body').textContent = json.body;
+                console.log(json.name);
+            })
+            .catch((error) => {
+document.getElementById('error').textContent = error;
+                console.log(error);
+            });
+        //alert(this.innerHTML);  // not sure how to access this (?)
+     });
+  searchRadio.onsubmit = async (e) => {
+    e.preventDefault();
+    let response = await fetch('/radio/search', {
+      method: 'POST',
+      body: new FormData(searchRadio)
+    });
+    let result = await response.json();
+servers = result.data;
+$(".radio").remove();
+$.each(servers, function(index, value) {
+  $("#list-radio").append("<div class=\"radio\" data-id=\"" + value.stationuuid + "\">" + value.name + "</div>");
+});
+};
+loadItems();
+</script  >
+{% endblock %}
