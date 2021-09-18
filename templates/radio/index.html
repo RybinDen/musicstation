@@ -57,6 +57,7 @@
    {% endblock %}
 {% block scripts %}
 <script>
+loadItems();
 $(document).on('click', '.radio', function() {
         fetch('/radio/click?stationuuid='+ $(this).data('id'))
             .then((response) => {
@@ -89,6 +90,5 @@ $.each(servers, function(index, value) {
   $("#list-radio").append("<div class=\"radio\" data-id=\"" + value.stationuuid + "\">" + value.name + "</div>");
 });
 };
-loadItems();
 </script  >
 {% endblock %}

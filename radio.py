@@ -1,10 +1,10 @@
 from flask import Blueprint, jsonify, render_template, request, make_response # flash, g, redirect, url_for
 from jinja2 import TemplateNotFound
 from pyradios import RadioBrowser
-import subprocess
+from .mpvmanager import MPVManager
+player = MPVManager()
 
 bp = Blueprint("radio", __name__, url_prefix="/radio")
-
 @bp.route("/")
 def index():
     rb = RadioBrowser()
@@ -12,20 +12,24 @@ def index():
     response = rb.stations_by_countrycode('ru',order='clickcount', limit=20)
     return render_template("radio/index.html", countStation = countStation[0]['stationcount'])
 
-# счетчик кликов по станции
+# воспроизведение и счетчик кликов по станции
 @bp.route('/click')
 def click():
     stationuuid = request.args.get('stationuuid')
     rb = RadioBrowser()
     response = rb.click_counter(stationuuid)
-    p = subprocess.Popen(["C:/Program Files/VideoLAN/VLC/vlc.exe", response['url'], '--play-and-exit'])
+    if player.isInitialized == False:
+        player.begin()
+    if player.isPlaying == True:
+        player.stop()
+    player.play(response['url'])
     return jsonify(response)
 
 @bp.route("/search", methods=("GET", "POST"))
 def search():
     name = request.form.get('name')
     rb = RadioBrowser()
-    response = rb.search(name=name, limit=5)
+    response = rb.search(name=name, limit=20)
     return jsonify(data=response)
 @bp.route("/load")
 def load():
